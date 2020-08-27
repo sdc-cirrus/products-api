@@ -1,0 +1,28 @@
+{
+  "name": "products-api",
+  "version": "1.0.0",
+  "description": "API set up to handle front end overview widget",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sdc-cirrus/products-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sdc-cirrus/products-api/issues"
+  },
+  "homepage": "https://github.com/sdc-cirrus/products-api#readme",
+  "dependencies": {
+    "@fast-csv/parse": "^4.3.1",
+    "body-parser": "^1.19.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "fast-csv": "^4.3.1",
+    "pg": "^8.3.2"
+  }
+}
