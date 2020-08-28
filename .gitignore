@@ -3,4 +3,4 @@ node_modules
 db/csv
 *.txt
 .DS_Store
-db
+db/data

@@ -1,18 +1,19 @@
+## WRITE YOUR DOCKER COMPOSE HERE!
 version: '3.8'
 services:
-  postgres:
-    image: postgres
-    environment:
-      POSTGRES_PASSWORD: jack
-      POSTGRES_USER: postgres
-      POSTGRES_DB: atelier
-    volumes:
-      - /db/data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
   web:
-    image: xdynasty/atelier-server
-    depends_on:
-      - postgres
+    build: ./server
     ports:
       - '80:3000'
+    depends_on:
+      - db
+  db:
+    image: postgres:12-alpine
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: atelier
+      POSTGRES_PASSWORD: jack
