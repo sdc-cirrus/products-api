@@ -1,0 +1,14 @@
+config:
+  target: http://localhost:80
+  phases:
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: 'Warm up the application'
+    - duration: 600
+      arrivalRate: 50
+      name: 'Sustained max load'
+scenarios:
+  - flow:
+      - get:
+          url: /products/list?page=2&count=10

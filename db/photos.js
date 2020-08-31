@@ -13,12 +13,20 @@ const writeStream = fs.createWriteStream(
   path.join(__dirname, './csv/photos2.csv')
 );
 
+let lc = 0;
 rl.on('line', (line) => {
   let row = line.split(',');
-
   let thumbnail = row[3];
-  if (thumbnail[thumbnail.length - 1] !== '"') {
-    row[3] += '"';
+  let newRow = [];
+  for (let i = 0; i < row.length; i++) {
+    let cat = row[i].trim().replace(/"/g, '');
+    if (i === 3) {
+      if (cat[0] === 'u') {
+        cat = cat.slice(1);
+      }
+    }
+    newRow.push(cat);
   }
-  writeStream.write(row.join(',') + '\n');
+  lc++;
+  writeStream.write(newRow.join(',') + '\n');
 });

@@ -10,7 +10,7 @@ const pool = require('./db');
       console.log('connected');
       break;
     } catch (err) {
-      console.log(err);
+      console.log('failed to connect');
       retries--;
       console.log('retries left:', retries);
       await new Promise((resolve) => {
@@ -26,11 +26,17 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
+app.use((req, res, next) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  next();
+});
+
 app.get('/', (req, res) => {
   res.send('<h1>ATELIER API</h1>');
 });
 
 app.get('/products/list', (req, res) => {
+  console.log('/products/list');
   const page = req.query.page || 1;
   const count = req.query.count || 5;
   pool.connect().then((client) => {
@@ -169,6 +175,7 @@ app.get('/products/:productId/styles', (req, res) => {
 });
 
 app.get('/products/:productId/related', (req, res) => {
+  console.log(`/products/${productId}/related`);
   pool.connect().then((client) => {
     client
       .query('SELECT * from related WHERE current_product_id = $1', [
@@ -181,6 +188,10 @@ app.get('/products/:productId/related', (req, res) => {
         }
         console.log('response:', response);
         res.send(response);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.sendStatus(404);
       });
   });
 });
@@ -188,3 +199,5 @@ app.get('/products/:productId/related', (req, res) => {
 app.listen(PORT, () => {
   console.log(`listening on PORT: ${PORT}`);
 });
+
+module.exports = app;
