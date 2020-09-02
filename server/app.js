@@ -26,6 +26,8 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
+app.use(express.static(__dirname));
+
 app.use((req, res, next) => {
   res.set('Access-Control-Allow-Origin', '*');
   next();

@@ -1,6 +1,5 @@
 .env
 node_modules
 db/csv
-*.txt
 .DS_Store
 db/data
