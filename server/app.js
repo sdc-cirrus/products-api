@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/products/list', (req, res) => {
-  console.log('/products/list');
+  //console.log('/products/list');
   const page = req.query.page || 1;
   const count = req.query.count || 5;
   pool.connect().then((client) => {
@@ -46,9 +46,9 @@ app.get('/products/list', (req, res) => {
         count * page,
       ])
       .then(({ rows }) => {
-        console.log('result from get(/products/list):', rows);
+        // console.log('result from get(/products/list):', rows);
         client.release();
-        console.log('response:', rows);
+        // console.log('response:', rows);
         res.send(rows);
       })
       .catch((err) => {
@@ -72,7 +72,7 @@ app.get('/products/:productId', (req, res) => {
               client2.release();
               let productInfo = rows[0];
               productInfo.features = result.rows;
-              console.log('response:', productInfo);
+              // console.log('response:', productInfo);
               res.send(productInfo);
             })
             .catch((err) => {
@@ -93,7 +93,7 @@ app.get('/products/:productId/styles', (req, res) => {
       ])
       .then(({ rows }) => {
         client.release();
-        console.log('stylesResults', rows);
+        // console.log('stylesResults', rows);
         let skuPromises = [];
         let photoPromises = [];
         let styles = [];
@@ -115,7 +115,7 @@ app.get('/products/:productId/styles', (req, res) => {
                   styleId,
                 ])
                 .then((results) => {
-                  console.log('results.rows', results.rows);
+                  // console.log('results.rows', results.rows);
                   client.release();
                   return results.rows;
                 })
@@ -167,15 +167,19 @@ app.get('/products/:productId/styles', (req, res) => {
               }
               response.results = styles;
               res.send(response);
-              console.log('response:', response);
+              // console.log('response:', response);
             });
+          })
+          .catch((err) => {
+            console.log(err);
+            res.send(500);
           });
       });
   });
 });
 
 app.get('/products/:productId/related', (req, res) => {
-  console.log(`/products/${productId}/related`);
+  // console.log(`/products/${req.params.productId}/related`);
   pool.connect().then((client) => {
     client
       .query('SELECT * from related WHERE current_product_id = $1', [
@@ -186,7 +190,7 @@ app.get('/products/:productId/related', (req, res) => {
         for (const row of rows) {
           response.push(row.related_product_id);
         }
-        console.log('response:', response);
+        // console.log('response:', response);
         res.send(response);
       })
       .catch((err) => {
