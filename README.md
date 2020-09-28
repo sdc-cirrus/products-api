@@ -11,9 +11,6 @@ The goal of this project was to build a scalable RESTful API service for the Pro
 ```
 docker-compose up
 ```
-
-## Deployment
-
 ## Tech Stack
 - [Docker](https://www.docker.com/)
 - [PostgreSQL](https://www.postgresql.org/)
