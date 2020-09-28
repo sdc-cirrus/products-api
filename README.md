@@ -14,6 +14,7 @@ docker-compose up
 ## Tech Stack
 - [Docker](https://www.docker.com/)
 - [PostgreSQL](https://www.postgresql.org/)
+- [Redis](https://redis.io/)
 - [Node-PG](https://node-postgres.com/)
 - [Artillery](https://artillery.io/)
 - [LoaderIO](https://loader.io/)
