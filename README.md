@@ -20,10 +20,11 @@ docker-compose up
 - [LoaderIO](https://loader.io/)
 
 ## ETL
-1. Used Node streams to normalize data.
-2. Designed appropriate schemas for the data
-3. Leveraged Node-PG connection pools and DBeaver to load the data into the local development database and deployed database.
-4. Incorporated Docker Swarm to replicate multiple instances of the server and scale the API
+1. Inherited legacy dataset consisting of 40M records.
+2. Used Node streams to transform data.
+3. Designed appropriate schemas for the data
+4. Leveraged Node-PG connection pools and DBeaver to load the data into the local development database and deployed database.
+5. Incorporated Docker Swarm to replicate multiple instances of the server and scale the API
 
 ## Testing
 Used Loader.IO and Artillery to stress test the API. 
