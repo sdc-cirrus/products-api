@@ -1,5 +1,6 @@
 .env
 node_modules
-db/csv
+db
 .DS_Store
 db/data
+coverage

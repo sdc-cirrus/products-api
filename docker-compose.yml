@@ -5,7 +5,7 @@ services:
     ports:
       - '80:3000'
     volumes:
-      - /Users/junjiexu/Qsync/hack-reactor/products-api/server:/app
+      - /Users/junjiexu/Qsync/hack-reactor/products-api/server:/app/server
     depends_on:
       - db
       - redis
@@ -16,9 +16,9 @@ services:
     volumes:
       - ./db/data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_DB: atelier
-      POSTGRES_PASSWORD: jack
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   redis:
     image: redis:6.0.8-alpine
     ports:
