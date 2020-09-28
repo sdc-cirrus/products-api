@@ -37,3 +37,10 @@ Used Loader.IO and Artillery to stress test the API.
 | GET          | /products/:productId/styles | Returns the all styles available for the given product                     | 200    |
 | GET          | /products/:productId        | Returns all product level information for a specified product id           | 200    |
 | GET          | /products/list              | Retrieves the list of products                                             | 200    |
+
+## Results
+### Scenario 1
+- 500 Requests Per Second for 1 Minute
+- /products/6/styles
+
+
