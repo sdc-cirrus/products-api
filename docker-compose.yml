@@ -1,4 +1,3 @@
-## WRITE YOUR DOCKER COMPOSE HERE!
 version: '3.3'
 services:
   web:
@@ -6,9 +5,10 @@ services:
     ports:
       - '80:3000'
     volumes:
-      - ./server:/server
+      - /Users/junjiexu/Qsync/hack-reactor/products-api/server:/app
     depends_on:
       - db
+      - redis
   db:
     image: postgres:12-alpine
     ports:
@@ -19,3 +19,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: atelier
       POSTGRES_PASSWORD: jack
+  redis:
+    image: redis:6.0.8-alpine
+    ports:
+      - '6379:6379'

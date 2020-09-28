@@ -1,5 +1,7 @@
 const express = require('express');
 const pool = require('./db');
+const redis = require('redis');
+const redisClient = redis.createClient(6379, 'redis');
 
 (async () => {
   let retries = 5;
@@ -21,9 +23,7 @@ const pool = require('./db');
 })();
 
 const app = express();
-
 const path = require('path');
-
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(__dirname));
@@ -38,7 +38,6 @@ app.get('/', (req, res) => {
 });
 
 app.get('/products/list', (req, res) => {
-  //console.log('/products/list');
   const page = req.query.page || 1;
   const count = req.query.count || 5;
   pool.connect().then((client) => {
@@ -48,140 +47,159 @@ app.get('/products/list', (req, res) => {
         count * page,
       ])
       .then(({ rows }) => {
-        // console.log('result from get(/products/list):', rows);
         client.release();
-        // console.log('response:', rows);
         res.send(rows);
       })
       .catch((err) => {
+        client.release();
         res.sendStatus(404);
       });
   });
 });
 
 app.get('/products/:productId', (req, res) => {
-  pool.connect().then((client) => {
-    client
-      .query('SELECT * from products where id = $1', [req.params.productId])
-      .then(({ rows }) => {
-        pool.connect().then((client2) => {
-          client2
-            .query(
-              'SELECT feature, value from features WHERE product_id = $1',
-              [req.params.productId]
-            )
-            .then((result) => {
-              client2.release();
-              let productInfo = rows[0];
-              productInfo.features = result.rows;
-              // console.log('response:', productInfo);
-              res.send(productInfo);
-            })
-            .catch((err) => {
-              res.sendStatus(404);
+  redisClient.get('product' + req.params.productId, (err, redisRes) => {
+    console.log('redis res for /products/:productId:', redisRes);
+    if (!redisRes) {
+      pool.connect().then((client) => {
+        client
+          .query('SELECT * from products where id = $1', [req.params.productId])
+          .then(({ rows }) => {
+            pool.connect().then((client2) => {
+              client2
+                .query(
+                  'SELECT feature, value from features WHERE product_id = $1',
+                  [req.params.productId]
+                )
+                .then((result) => {
+                  client2.release();
+                  let productInfo = rows[0];
+                  productInfo.features = result.rows;
+                  console.log('productInfo:', productInfo);
+                  redisClient.set(
+                    'product' + req.params.productId,
+                    JSON.stringify(productInfo)
+                  );
+                  res.send(productInfo);
+                })
+                .catch((err) => {
+                  client2.release();
+                  res.sendStatus(404);
+                });
             });
-        });
+          })
+          .catch((err) => {
+            client.release();
+            res.sendStatus(404);
+          });
       });
+    } else {
+      console.log('redisRes:', redisRes);
+      res.send(JSON.parse(redisRes));
+    }
   });
 });
 
 app.get('/products/:productId/styles', (req, res) => {
-  const response = {};
-  response['product_id'] = req.params.productId;
-  pool.connect().then((client) => {
-    return client
-      .query('SELECT * FROM styles WHERE product_id = $1', [
-        req.params.productId,
-      ])
-      .then(({ rows }) => {
-        client.release();
-        // console.log('stylesResults', rows);
-        let skuPromises = [];
-        let photoPromises = [];
-        let styles = [];
-        for (let row of rows) {
-          styles.push({
-            style_id: row.style_id,
-            name: row.name,
-            original_price: row.original_price,
-            sale_price: row.sale_price,
-            'default?': row['default?'],
-            photos: [],
-            skus: {},
-          });
-          let styleId = row.style_id;
-          skuPromises.push(
-            pool.connect().then((client) => {
-              return client
-                .query('SELECT size, quantity FROM skus WHERE style_id = $1', [
-                  styleId,
-                ])
-                .then((results) => {
-                  // console.log('results.rows', results.rows);
-                  client.release();
-                  return results.rows;
+  console.log('/products/:productId/styles');
+  const productId = req.params.productId;
+  let response = {};
+  response.productId = productId;
+  redisClient.get('styles' + productId, (err, redisRes) => {
+    if (!redisRes) {
+      console.log('not cached in redis');
+      pool.connect().then((client1) => {
+        const stylesPromises = [];
+        client1
+          .query(
+            'SELECT style_id, name, sale_price, original_price, "default?" FROM styles where product_id = $1',
+            [productId]
+          )
+          .then(({ rows }) => {
+            client1.release();
+            response.styles = rows;
+            response.styles.forEach((style) => {
+              const style_id = style.style_id;
+              let stylePromises = [];
+              stylePromises.push(
+                pool
+                  .connect()
+                  .then((client2) => {
+                    return client2
+                      .query(
+                        'SELECT url, thumbnail_url FROM photos WHERE style_id = $1',
+                        [style_id]
+                      )
+                      .then(({ rows }) => {
+                        client2.release();
+                        return rows;
+                      })
+                      .catch((err) => {
+                        client2.release();
+                        res.sendStatus(500);
+                      });
+                  })
+                  .then((result) => {
+                    return result;
+                  })
+                  .catch((err) => {
+                    res.sendStatus(500);
+                  })
+              );
+              stylePromises.push(
+                pool
+                  .connect()
+                  .then((client2) => {
+                    return client2
+                      .query(
+                        'SELECT size, quantity FROM skus WHERE style_id = $1',
+                        [style_id]
+                      )
+                      .then(({ rows }) => {
+                        client2.release();
+                        return rows;
+                      })
+                      .catch((err) => {
+                        client2.release();
+                        res.sendStatus(500);
+                      });
+                  })
+                  .then((result) => {
+                    return result;
+                  })
+                  .catch((err) => {
+                    res.sendStatus(500);
+                  })
+              );
+              stylesPromises.push(
+                Promise.all(stylePromises).then((results) => {
+                  style.photos = results[0];
+                  style.skus = results[1];
+                  console.log('response.styles:', response.styles);
                 })
-                .catch((err) => {
-                  client.release();
-                  console.log(err);
-                  res.sendStatus(404);
-                });
-            })
-          );
-          photoPromises.push(
-            pool.connect().then((client) => {
-              return client
-                .query(
-                  'SELECT url, thumbnail_url from photos where style_id = $1',
-                  [styleId]
-                )
-                .then((results) => {
-                  client.release();
-                  return results.rows;
-                })
-                .catch((err) => {
-                  console.log(err);
-                  client.release();
-                  res.sendStatus(404);
-                });
-            })
-          );
-        }
-        Promise.all(skuPromises)
-          .then((skusArray) => {
-            for (let i = 0; i < skusArray.length; i++) {
-              for (let j = 0; j < skusArray[i].length; j++) {
-                let skuRow = skusArray[i][j];
-                styles[i]['skus'][skuRow.size] = Number(skuRow.quantity);
-              }
-            }
+              );
+            });
           })
           .then(() => {
-            Promise.all(photoPromises).then((photosArray) => {
-              for (let i = 0; i < photosArray.length; i++) {
-                for (let j = 0; j < photosArray[i].length; j++) {
-                  let photoRow = photosArray[i][j];
-                  styles[i].photos.push({
-                    thumbnail_url: photoRow.thumbnail_url,
-                    url: photoRow.url,
-                  });
-                }
-              }
-              response.results = styles;
+            Promise.all(stylesPromises).then(() => {
+              console.log(response);
+              redisClient.set('styles' + productId, JSON.stringify(response));
               res.send(response);
-              // console.log('response:', response);
             });
           })
           .catch((err) => {
-            console.log(err);
-            res.send(500);
+            client1.release();
+            res.sendStatus(404);
           });
       });
+    } else {
+      console.log('cached in redis');
+      res.send(JSON.parse(redisRes));
+    }
   });
 });
 
 app.get('/products/:productId/related', (req, res) => {
-  // console.log(`/products/${req.params.productId}/related`);
   pool.connect().then((client) => {
     client
       .query('SELECT * from related WHERE current_product_id = $1', [
@@ -192,7 +210,6 @@ app.get('/products/:productId/related', (req, res) => {
         for (const row of rows) {
           response.push(row.related_product_id);
         }
-        // console.log('response:', response);
         res.send(response);
       })
       .catch((err) => {

@@ -25,8 +25,8 @@ pool
             "CREATE TABLE products (id INTEGER PRIMARY KEY NOT NULL, name TEXT DEFAULT '', slogan TEXT DEFAULT '', description TEXT DEFAULT '', category TEXT DEFAULT '', default_price TEXT DEFAULT '0')"
           )
           .then((res) => {
-            console.log('pool.idleCount', pool.idleCount);
-            console.log('pool.waitingCount', pool.waitingCount);
+            // console.log('pool.idleCount', pool.idleCount);
+            // console.log('pool.waitingCount', pool.waitingCount);
             client.release();
           });
       })
@@ -59,7 +59,7 @@ pool
               const category = row.slice(firstQI + 1, secondQI);
               const defaultPrice = row.slice(row.search(/\d+$/));
               pool.connect().then((client) => {
-                console.log('pool.waitingCount', pool.waitingCount);
+                // console.log('pool.waitingCount', pool.waitingCount);
                 client
                   .query(
                     'INSERT INTO products (id, name, slogan, description, category, default_price) values ($1, $2, $3, $4, $5, $6)',

@@ -1,7 +1,5 @@
 require('dotenv').config();
 const { Pool } = require('pg');
-const readline = require('readline');
-const csv = require('fast-csv');
 
 const pool = new Pool({
   user: process.env.POSTGRES_USER,

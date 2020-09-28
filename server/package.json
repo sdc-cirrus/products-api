@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "jest --detectOpenHandles",
-    "start": "node app.js",
+    "start": "nodemon app.js",
     "artillery": "artillery run --output artillery-report.json artillery.yaml"
   },
   "repository": {
@@ -19,12 +19,11 @@
   },
   "homepage": "https://github.com/sdc-cirrus/products-api#readme",
   "dependencies": {
-    "@fast-csv/parse": "^4.3.1",
-    "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fast-csv": "^4.3.1",
-    "pg": "^8.3.2"
+    "nodemon": "^2.0.4",
+    "pg": "^8.3.2",
+    "redis": "^3.0.2"
   },
   "devDependencies": {
     "artillery": "^1.6.1",
