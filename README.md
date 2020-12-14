@@ -38,33 +38,4 @@ Used Loader.IO and Artillery to stress test the API.
 | GET          | /products/:productId        | Returns all product level information for a specified product id           | 200    |
 | GET          | /products/list              | Retrieves the list of products                                             | 200    |
 
-## Results
-<details>
-  <summary>Indexing</summary>
-
-![](results/index.png)
-</details>
-<details>
-  <summary>Scenario 1</summary>
-<br>500 Requests Per Second for 1 Minute
-<br>GET /products/6/styles
-
-#### No Redis Caching
-![](results/atelier-500.png)
-
-#### With Redis Caching
-![](results/atelier-500-redis.png)
-</details>
-
-<details>
-  <summary>Scenario 2</summary>
-<br>1000 Requests Per Second for 1 Minute
-<br>GET /products/6/styles
-
-#### No Redis Caching
-![](results/atelier-1000.png)
-
-#### With Redis Caching
-![](results/atelier-1000-redis.png)
-</details>
 
